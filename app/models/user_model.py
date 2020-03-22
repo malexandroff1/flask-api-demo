@@ -1,10 +1,20 @@
-class User:
-    def __init__(self, first_name=None, last_name=None, email=None, birthdate=None):
-        self.first_name = first_name
-        self.last_name = last_name
-        self.email = email
-        self.birthdate = birthdate
+from sqlalchemy.ext.hybrid import hybrid_property
+from app import db
+from app import bcrypt
 
-    @classmethod
-    def from_dict(cls, data):
-        return cls(**data)
+
+class User(db.Model):
+    __tablename__ = 'users'
+
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(128), nullable=False)
+    email = db.Column(db.String(128), nullable=False)
+    _password = db.Column('password', db.String(128), nullable=False)
+
+    @hybrid_property
+    def password(self):
+        return self._password
+
+    @password.setter
+    def password(self, plaintext):
+        self._password = bcrypt.generate_password_hash(plaintext)
